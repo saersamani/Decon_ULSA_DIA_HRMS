@@ -39,22 +39,39 @@ end
 
 
 ttv1=abs(Ions(1)-ms_v1(ms_w+1,:));
-[~,ttv2]=max(ms_in1(ms_w+1,ttv1<=ms_w));
+[~,min_l]=min(ttv1);
+if (min_l+ms_w>=length(ttv1))
+    [~,ttv2]=max(ms_in1(ms_w+1,min_l-ms_w:end));
+    Ub=length(ttv1);
+    Lb=min_l-ms_w;
+elseif (min_l-ms_w<=0)
+    [~,ttv2]=max(ms_in1(ms_w+1,1:min_l+ms_w));
+    Ub=min_l+ms_w;
+    Lb=1;
+else
+    [~,ttv2]=max(ms_in1(ms_w+1,min_l-ms_w:min_l+ms_w));
+    Ub=min_l+ms_w;
+    Lb=min_l-ms_w;
+end
+
 if (isempty(ttv2)==0)
-    ttv3=ms_v1(ms_w+1,ttv1<=ms_w);
+    ttv3=ms_v1(ms_w+1,Lb:Ub);
     Ions(1)=ttv3(ttv2);
     
-    %plot(ms_v1(ms_w+1,ttv1<=0.01),ms_in1(ms_w+1,ttv1<=0.01))
+    %plot(ms_v1(ms_w+1,Lb:Ub),ms_in1(ms_w+1,Lb:Ub))
     
     
     tv1=abs(Ions(1)-ms_v1);
     
-    
+%     figure
+%     hold on
     ref_spec=zeros(size(ms_v1,1),1);
     for i=1:size(ms_v1,1)
         [V,J]=min(tv1(i,:));
         if (V<=Mass_tol)
             ref_spec(i)=ms_in1(i,J);
+%             plot(ms_v1(i,:),ms_in1(i,:))
+%             xlim([103 105])
         end
         clear V J
         
@@ -65,6 +82,7 @@ if (isempty(ttv2)==0)
     title('XIC of MS1')
     xlabel('Scan number')
     ylabel('Intensity')
+    %pause
     pause(time_for_pause)
     close
     %Low energy channel
@@ -144,6 +162,7 @@ if (isempty(ttv2)==0)
             
             
             [R,P] = corrcoef(Tv6(I_p:E_p),ref_spec(I_p:E_p));
+            %disp(R)
             if (R(2,1)>=R_min&&P(2,1)<=P_max&&Tv6(W)>=S2N*median(Tv6))
                 
                 MS_IN2(ms_v2(W+1,:)==ms_v2(W+1,Tv4))=ms_in2(W+1,ms_v2(W+1,:)==ms_v2(W+1,Tv4));
